@@ -1,0 +1,2 @@
+import { describe,expect,it } from 'vitest'; import { BestTimes } from './BestTimes';
+describe('BestTimes',()=>{it('conserve uniquement le meilleur temps',()=>{let data:string|null=null;const storage={getItem:()=>data,setItem:(_key:string,value:string)=>{data=value;}};const best=new BestTimes(storage);expect(best.save('dust','blaze',70)).toBe(true);expect(best.save('dust','blaze',80)).toBe(false);expect(best.save('dust','blaze',60)).toBe(true);expect(best.all()[0].time).toBe(60);});});

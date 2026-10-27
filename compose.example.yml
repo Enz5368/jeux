@@ -1,0 +1,15 @@
+services:
+  orellana-racing:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: orellana-racing
+    restart: unless-stopped
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
