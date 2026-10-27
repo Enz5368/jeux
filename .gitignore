@@ -12,3 +12,4 @@ dist/
 coverage/
 secrets/
 tmp/
+public/assets/third-party/

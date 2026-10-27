@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-export const TRACK_ID = 'dust-valley'; export const CHECKPOINT_COUNT = 7;
+import { assets } from '../assets/AssetLibrary';
+export const TRACK_ID = 'forest-valley'; export const CHECKPOINT_COUNT = 7;
 export interface TrackProgress { checkpoint: number | null; crossedFinish: boolean; }
 export class DustValley {
   readonly group = new THREE.Group(); private lastSector = 7;
@@ -8,7 +9,7 @@ export class DustValley {
     const terrain = new THREE.Mesh(new THREE.CylinderGeometry(70, 76, 2, 64), sand); terrain.position.y = -1.1; terrain.receiveShadow = true; this.group.add(terrain);
     const road = new THREE.Mesh(new THREE.RingGeometry(14.7, 29.3, 112), asphalt); road.rotation.x = -Math.PI / 2; road.scale.z = .72; road.position.y = .015; road.receiveShadow = true; this.group.add(road);
     const inner = new THREE.Mesh(new THREE.CircleGeometry(14.6, 64), new THREE.MeshStandardMaterial({ color: 0xc8783b, roughness: 1 })); inner.rotation.x = -Math.PI / 2; inner.scale.z = .72; inner.position.y = .02; inner.receiveShadow = true; this.group.add(inner);
-    this.addRoadMarks(); this.addStart(); this.addCheckpoints(); this.addGuardrails(); this.addScenery(); return this.group;
+    this.addRoadMarks(); this.addStart(); this.addCheckpoints(); this.addGuardrails(); this.addScenery(); void this.addImportedNature(); return this.group;
   }
   private addStart(): void { const white = new THREE.MeshBasicMaterial({ color: 0xf4e7c5 }); const dark = new THREE.MeshBasicMaterial({ color: 0x25212a }); for (let i = -3; i <= 3; i++) for (let j = 0; j < 2; j++) { const tile = new THREE.Mesh(new THREE.BoxGeometry(1.1, .03, .8), (i + j) % 2 ? white : dark); tile.position.set(i * 1.1, .05, 22 + j * .8 - .4); this.group.add(tile); } }
   private addRoadMarks(): void {
@@ -43,6 +44,15 @@ export class DustValley {
     const trailer = new THREE.Group(); const shell = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.5, 2.3), new THREE.MeshStandardMaterial({ color: 0xe7d9bd, roughness: .7 })); shell.position.y = 1.7; trailer.add(shell); const stripe = new THREE.Mesh(new THREE.BoxGeometry(5.3, .34, 2.34), new THREE.MeshStandardMaterial({ color: 0x3e7180, roughness: .75 })); stripe.position.y = 1.35; trailer.add(stripe); for (const x of [-1.7, 1.7]) { const wheel = new THREE.Mesh(new THREE.CylinderGeometry(.42, .42, .25, 10), new THREE.MeshStandardMaterial({ color: 0x202128 })); wheel.rotation.x = Math.PI / 2; wheel.position.set(x, .45, 1.2); trailer.add(wheel); } trailer.position.set(-37, 0, 15); trailer.rotation.y = -.55; this.group.add(trailer);
   }
   private addPine(x: number, z: number, material: THREE.Material, scale: number): void { const tree = new THREE.Group(); const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.18, .28, 2, 6), new THREE.MeshStandardMaterial({ color: 0x553321, roughness: 1 })); trunk.position.y = 1; tree.add(trunk); for (let i = 0; i < 3; i++) { const crown = new THREE.Mesh(new THREE.ConeGeometry(1.25 - i * .2, 2.2, 7), material); crown.position.y = 1.8 + i * .7; crown.castShadow = true; tree.add(crown); } tree.position.set(x, 0, z); tree.scale.setScalar(scale); this.group.add(tree); }
+  private async addImportedNature(): Promise<void> {
+    const root = '/assets/models/kenney/';
+    const pine = `${root}tree_pineTallA.glb`; const rock = `${root}rock_largeA.glb`; const cliff = `${root}cliff_large_rock.glb`; const bridge = `${root}bridge_wood.glb`;
+    const trees = [[-33, -17], [-36, -11], [-30, 9], [-27, 18], [31, -16], [35, -8], [30, 12], [27, 20], [-8, -30], [10, 31]];
+    await Promise.all(trees.map(([x, z], index) => assets.place(pine, this.group, new THREE.Vector3(x, 0, z), index * .73, 1.4 + index % 3 * .18)));
+    await Promise.all([[-38, -28], [-42, 22], [40, -27], [43, 25]].map(([x, z], index) => assets.place(cliff, this.group, new THREE.Vector3(x, 0, z), index * 1.4, 4.2)));
+    await Promise.all([[-18, -4], [18, 7], [-13, 26], [14, -26]].map(([x, z], index) => assets.place(rock, this.group, new THREE.Vector3(x, 0, z), index, 1.4)));
+    await assets.place(bridge, this.group, new THREE.Vector3(42, .25, -2), Math.PI / 2, 3.4);
+  }
   progress(position: { x: number; z: number }): TrackProgress { const angle = (Math.atan2(position.x / 1, position.z / .72) + Math.PI * 2) % (Math.PI * 2); const sector = Math.floor(angle / (Math.PI * 2 / CHECKPOINT_COUNT)); if (sector === this.lastSector) return { checkpoint: null, crossedFinish: false }; const expected = (this.lastSector + 1) % CHECKPOINT_COUNT; if (sector !== expected) return { checkpoint: null, crossedFinish: false }; this.lastSector = sector; return sector === 0 ? { checkpoint: null, crossedFinish: true } : { checkpoint: sector - 1, crossedFinish: false }; }
   resetProgress(): void { this.lastSector = 7; }
 }

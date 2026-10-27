@@ -1,6 +1,6 @@
 # Orellana Racing V1
 
-Jeu de course arcade 3D low-poly jouable dans le navigateur, sur PC et mobile. La V1 propose un contre-la-montre solo de trois tours sur **Dust Valley**, quatre pilotes et quatre capacités intégrées à la conduite.
+Jeu de course arcade 3D low-poly jouable dans le navigateur, sur PC et mobile. La V2 propose un contre-la-montre solo de trois tours sur **Forest Valley**, quatre pilotes et quatre capacités intégrées à la conduite.
 
 ## Jouer en local
 
@@ -33,6 +33,8 @@ Les tests couvrent activation, expiration et recharge des pouvoirs, checkpoints 
 - `src/controls` : clavier et Pointer Events multitouch.
 - `src/racing`, `src/abilities`, `src/storage` : règles testables sans rendu.
 - `src/vehicles`, `src/tracks`, `src/camera` : monde visuel procédural.
+- `src/assets/AssetLibrary.ts` : cache GLB/glTF asynchrone, clonage d’instances et gestion des assets indisponibles.
+- `public/tracks/forest-valley.json` : format de carte initial, extensible pour un futur éditeur.
 - `src/network` : contrat V2 typé pour serveur autoritaire, IDs joueur, salons privés, commandes séquencées et snapshots WebSocket (maximum 8 joueurs).
 
 La simulation ne dépend ni de Three.js ni du DOM. En V2, le serveur exécutera la même logique à pas fixe ; le client enverra ses commandes numérotées et interpolera les snapshots autoritaires. Le transport WebSocket est injectable mais inactif en V1 : aucun faux mode multijoueur n'est affiché.

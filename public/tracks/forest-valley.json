@@ -1,0 +1,13 @@
+{
+  "id": "forest-valley",
+  "name": "Forest Valley",
+  "version": 1,
+  "start": { "position": [0, 1.1, 19.4], "rotation": 1.5708 },
+  "checkpoints": 7,
+  "spawnPoints": [[0, 1.1, 19.4], [-2.5, 1.1, 19.4], [2.5, 1.1, 19.4]],
+  "objects": [
+    { "id": "pine-north-01", "asset": "kenney/tree_pineTallA", "position": [-33, 0, -17], "rotationY": 0.0, "scale": 1.4, "collision": "decor" },
+    { "id": "bridge-ravine", "asset": "kenney/bridge_wood", "position": [42, 0.25, -2], "rotationY": 1.5708, "scale": 3.4, "collision": "critical" },
+    { "id": "cliff-east", "asset": "kenney/cliff_large_rock", "position": [40, 0, -27], "rotationY": 2.8, "scale": 4.2, "collision": "critical" }
+  ]
+}
