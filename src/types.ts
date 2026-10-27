@@ -1,3 +1,5 @@
+declare const __BUILD_STAMP__: string;
+
 export type CharacterId = 'blaze' | 'frost' | 'volt' | 'shadow';
 export type GameScreen = 'menu' | 'character' | 'times' | 'settings' | 'race' | 'results';
 export interface ControlState { throttle: number; brake: number; steer: number; drift: boolean; ability: boolean; reset: boolean; }
