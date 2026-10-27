@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { assets } from '../assets/AssetLibrary';
+import { loadTrackMap, placeTrackObjects } from './TrackMap';
 export const TRACK_ID = 'forest-valley'; export const CHECKPOINT_COUNT = 7;
 export interface TrackProgress { checkpoint: number | null; crossedFinish: boolean; }
 export class DustValley {
@@ -46,12 +47,12 @@ export class DustValley {
   private addPine(x: number, z: number, material: THREE.Material, scale: number): void { const tree = new THREE.Group(); const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.18, .28, 2, 6), new THREE.MeshStandardMaterial({ color: 0x553321, roughness: 1 })); trunk.position.y = 1; tree.add(trunk); for (let i = 0; i < 3; i++) { const crown = new THREE.Mesh(new THREE.ConeGeometry(1.25 - i * .2, 2.2, 7), material); crown.position.y = 1.8 + i * .7; crown.castShadow = true; tree.add(crown); } tree.position.set(x, 0, z); tree.scale.setScalar(scale); this.group.add(tree); }
   private async addImportedNature(): Promise<void> {
     const root = '/assets/models/kenney/';
-    const pine = `${root}tree_pineTallA.glb`; const rock = `${root}rock_largeA.glb`; const cliff = `${root}cliff_large_rock.glb`; const bridge = `${root}bridge_wood.glb`;
+    const pine = `${root}tree_pineTallA.glb`; const rock = `${root}rock_largeA.glb`; const cliff = `${root}cliff_large_rock.glb`;
     const trees = [[-33, -17], [-36, -11], [-30, 9], [-27, 18], [31, -16], [35, -8], [30, 12], [27, 20], [-8, -30], [10, 31]];
     await Promise.all(trees.map(([x, z], index) => assets.place(pine, this.group, new THREE.Vector3(x, 0, z), index * .73, 1.4 + index % 3 * .18)));
-    await Promise.all([[-38, -28], [-42, 22], [40, -27], [43, 25]].map(([x, z], index) => assets.place(cliff, this.group, new THREE.Vector3(x, 0, z), index * 1.4, 4.2)));
+    await Promise.all([[-38, -28], [-42, 22], [43, 25]].map(([x, z], index) => assets.place(cliff, this.group, new THREE.Vector3(x, 0, z), index * 1.4, 4.2)));
     await Promise.all([[-18, -4], [18, 7], [-13, 26], [14, -26]].map(([x, z], index) => assets.place(rock, this.group, new THREE.Vector3(x, 0, z), index, 1.4)));
-    await assets.place(bridge, this.group, new THREE.Vector3(42, .25, -2), Math.PI / 2, 3.4);
+    const map = await loadTrackMap('/tracks/forest-valley.json'); if (map) await placeTrackObjects(map, this.group);
   }
   progress(position: { x: number; z: number }): TrackProgress { const angle = (Math.atan2(position.x / 1, position.z / .72) + Math.PI * 2) % (Math.PI * 2); const sector = Math.floor(angle / (Math.PI * 2 / CHECKPOINT_COUNT)); if (sector === this.lastSector) return { checkpoint: null, crossedFinish: false }; const expected = (this.lastSector + 1) % CHECKPOINT_COUNT; if (sector !== expected) return { checkpoint: null, crossedFinish: false }; this.lastSector = sector; return sector === 0 ? { checkpoint: null, crossedFinish: true } : { checkpoint: sector - 1, crossedFinish: false }; }
   resetProgress(): void { this.lastSector = 7; }
