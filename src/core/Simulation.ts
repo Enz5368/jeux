@@ -27,8 +27,8 @@ export class Simulation {
     const rotation = this.body.rotation(); const yaw = Math.atan2(2 * (rotation.w * rotation.y + rotation.x * rotation.z), 1 - 2 * (rotation.y * rotation.y + rotation.z * rotation.z));
     const velocity = this.body.linvel(); const forwardX = Math.sin(yaw); const forwardZ = Math.cos(yaw); const forwardSpeed = velocity.x * forwardX + velocity.z * forwardZ;
     if (racing) {
-      let acceleration = 19; let maxSpeed = 22; let grip = input.drift ? 0.72 : 0.9;
-      if (this.ability.state.active) { if (this.character.id === 'blaze') { acceleration = 34; maxSpeed = 32; } if (this.character.id === 'frost') { acceleration = 23; grip = 0.98; } if (this.character.id === 'volt') { maxSpeed = 29; acceleration = 27; } }
+      let acceleration = 34; let maxSpeed = 30; let grip = input.drift ? 0.56 : 0.94;
+      if (this.ability.state.active) { if (this.character.id === 'blaze') { acceleration = 48; maxSpeed = 42; } if (this.character.id === 'frost') { acceleration = 38; grip = 1.08; } if (this.character.id === 'volt') { maxSpeed = 38; acceleration = 43; } }
       if (this.justActivated && this.character.id === 'volt') this.body.applyImpulse({ x: forwardX * 8, y: 1.2, z: forwardZ * 8 }, true);
       const engine = input.throttle * acceleration - input.brake * (forwardSpeed > 1 ? 30 : -11);
       if (Math.abs(forwardSpeed) < maxSpeed || Math.sign(engine) !== Math.sign(forwardSpeed)) this.body.applyImpulse({ x: forwardX * engine * dt, y: 0, z: forwardZ * engine * dt }, true);
@@ -39,7 +39,12 @@ export class Simulation {
       const turn = input.steer * steerScale * (input.drift ? 2.25 : 1.55) * Math.sign(forwardSpeed || 1) * dt;
       if (turn) this.body.setRotation({ x: 0, y: Math.sin((yaw + turn) / 2), z: 0, w: Math.cos((yaw + turn) / 2) }, true);
     }
-    this.world.step(); const p = this.body.translation();
+    this.world.step(); const p = this.body.translation(); const uprightYaw = yaw + (racing ? input.steer * Math.min(1, Math.abs(forwardSpeed) / 3.2) * (input.drift ? 2.25 : 1.55) * Math.sign(forwardSpeed || 1) * dt : 0);
+    // The vehicle is an arcade kart, not a loose physics prop: contact may slow it down but
+    // never tips it over or launches it from a segmented guardrail.
+    this.body.setRotation({ x: 0, y: Math.sin(uprightYaw / 2), z: 0, w: Math.cos(uprightYaw / 2) }, true);
+    this.body.setTranslation({ x: p.x, y: 1.1, z: p.z }, true);
+    const settledVelocity = this.body.linvel(); this.body.setLinvel({ x: settledVelocity.x, y: 0, z: settledVelocity.z }, true);
     if (p.y > 0.5 && p.y < 3 && Math.hypot(p.x, p.z) < 55) this.lastSafe = { x: p.x, y: 1.1, z: p.z, rotation: yaw };
     this.stuckFor = Math.hypot(velocity.x, velocity.z) < 0.25 && input.throttle > 0 ? this.stuckFor + dt : 0;
     if (p.y < -5 || this.stuckFor > 4) this.reset();
@@ -51,7 +56,7 @@ export class Simulation {
     for (const radius of [14.5, 29.5]) for (let i = 0; i < 56; i++) {
       const a = i / 56 * Math.PI * 2; const x = Math.sin(a) * radius; const z = Math.cos(a) * radius * .72;
       const tangent = a + Math.PI / 2;
-      this.world.createCollider(RAPIER.ColliderDesc.cuboid(1.15, .48, .22).setTranslation(x, .55, z).setRotation({ x: 0, y: Math.sin(tangent / 2), z: 0, w: Math.cos(tangent / 2) }).setFriction(.8).setRestitution(.12), rail);
+      this.world.createCollider(RAPIER.ColliderDesc.cuboid(1.15, .48, .22).setTranslation(x, .55, z).setRotation({ x: 0, y: Math.sin(tangent / 2), z: 0, w: Math.cos(tangent / 2) }).setFriction(.8).setRestitution(0), rail);
     }
   }
   state(): VehicleState { const p = this.body.translation(); const q = this.body.rotation(); return { position: { x: p.x, y: p.y, z: p.z }, rotation: Math.atan2(2 * (q.w * q.y + q.x * q.z), 1 - 2 * (q.y * q.y + q.z * q.z)), speed: Math.hypot(this.body.linvel().x, this.body.linvel().z), verticalVelocity: this.body.linvel().y, grounded: p.y < 1.3 }; }
