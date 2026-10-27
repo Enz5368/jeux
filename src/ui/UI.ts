@@ -1,5 +1,6 @@
 import { CHARACTERS, type CharacterDefinition } from '../characters/characters';
 import type { RaceSnapshot } from '../racing/RaceManager'; import type { BestTime } from '../storage/BestTimes'; import type { CharacterId } from '../types';
+declare const __BUILD_STAMP__: string;
 export const formatTime = (seconds: number): string => { const minutes = Math.floor(seconds / 60); const rest = seconds - minutes * 60; return `${minutes}:${rest.toFixed(3).padStart(6, '0')}`; };
 export class UI {
   private hud!: HTMLElement; private countdown!: HTMLElement; private speed!: HTMLElement; private lap!: HTMLElement; private timer!: HTMLElement; private boost!: HTMLElement; private progress!: HTMLElement;
